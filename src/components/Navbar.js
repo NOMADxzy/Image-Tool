@@ -8,20 +8,26 @@ import logo from '../pixy-logo-white.svg';
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, message} from 'antd';
 
+const HOST = 'http://localhost:5000/';
+
 const props = {//导入文件夹逻辑
     name: 'file',
     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-    // beforeUpload:(file,filelist)=>{//获取文件夹路径，停止上传
-    //     console.log(file)
-    //     console.log(filelist)
-    //     return false
-    // },
-    customRequest:(options)=>{
-        const { data,filename,headers, file, onProgress } = options;
-        console.log(data)
-        console.log(filename)
-        console.log(headers)
-        console.log(1)
+    beforeUpload:(file,filelist)=>{//获取文件夹路径，停止上传
+        let dir = file.webkitRelativePath.split('/')[0]
+        console.log(dir)
+
+        fetch(HOST+'import_dir', {
+            method: 'POST', // or 'PUT'
+            body: JSON.stringify({dir:dir}), // data can be `string` or {object}!
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            })
+        })
+            .then(res=>res.json())
+            .then(data=>{
+                console.log(data)
+            }).catch(err=>console.log(err))
     },
     showUploadList:false,
     headers: {
@@ -77,16 +83,16 @@ const Navbar = (setTerm) => {
 
     return (
 
-        <div className="bg-custom-light mt-0" id={"header"}>
+        <div className="bg-custom-light mt-0 fixed top-0 min-w-full z-10" id={"header"}>
             <div className="container mx-auto mt-0 bg-custom-light text-white">
 
-                <nav className="flex flex-wrap items-center justify-between p-5 bg-custom-light text-white">
+                <nav className="flex flex-wrap items-center justify-between p-2 bg-custom-light text-white">
 
                     {/* logo */}
 
                     <div className="flex items-center">
 
-                        <img src={logo} alt="LOGO" width="150" />
+                        <img src={logo} alt="LOGO" width="100" />
                         {/* <h1 className="font-bold text-3xl ml-2">PIXY</h1> */}
 
                     </div>

@@ -27,7 +27,7 @@ import RightNav from './controls/RightNav';
 import PlayPause from './controls/PlayPause';
 import Detect from "./controls/Detect";
 import SwipeWrapper from './SwipeWrapper';
-import {notification,Button} from 'antd'
+import {notification, Button, Tag} from 'antd'
 import "antd/dist/antd.css";
 const screenChangeEvents = [
     'fullscreenchange',
@@ -1035,7 +1035,8 @@ class ImageGallery extends React.Component {
         })
             .then(res=>res.json())
             .then(data=>{
-                items[this.state.currentIndex].original = HOST+data.box_img
+                console.log(data)
+                if(data.box_img!=='') items[this.state.currentIndex].original = HOST+data.box_img
                 this.forceUpdate()
             }).catch(err=>console.log(err))
     }
@@ -1090,7 +1091,9 @@ class ImageGallery extends React.Component {
                 currentSlideOffset: 0,
                 slideStyle: { transition: `all ${slideDuration}ms ease-out` },
             }, this.onSliding);
-            this.props.setCur_idx(index)
+            if(index<0) this.props.setCur_idx(items.length - 1)
+            else if(index===items.length) this.props.setCur_idx(0)
+            else this.props.setCur_idx(index);
         }
     }
 
@@ -1473,6 +1476,9 @@ class ImageGallery extends React.Component {
 
             </div>
         );
+    }
+    update = () =>{
+        this.forceUpdate()
     }
 }
 

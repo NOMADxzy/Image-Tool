@@ -9,7 +9,7 @@ import Aside from './components/Aside';
 import { } from '@fortawesome/react-fontawesome'
 import ImageGallery from "./ImageGallery";
 import "antd/dist/antd.css";
-import {Button, Slider,Select,Collapse,Image,Space,Card,Checkbox} from 'antd'
+import {Button, Slider, Select, Collapse, Image, Space, Card, Checkbox, PageHeader, message} from 'antd'
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
 const { Panel } = Collapse;
 const Option = Select
@@ -22,7 +22,8 @@ const SEARCH_API = 'http://localhost:5000/search/'
 function Everything() {
 
   const [images, setImages] = useState([]);
-  const [checked,setChecked] = useState([])
+  const [title,setTitle] = useState('');
+  const [edit,setEdit] = useState(false);
   const [relative,setRelative] = useState(null);
   const [contentMode,setContentMode] = useState(0)
   const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +32,7 @@ function Everything() {
     const [num_gap,setNum_gap]=useState(0)
   const [selectedImg, setSelectedImg] = useState(null);
   const [ShowtagTitle,setShowTagTitle] = useState(false)
+    const [refresh,setRefresh] = useState(0);
 
 
   useEffect(() => {//搜索图片
@@ -44,70 +46,33 @@ function Everything() {
       })
 
       .catch(err => console.log(err));
-  }, [term]);
+  }, [term,refresh]);
 
   const handleKeyDown=(e)=>{
       if(e.keyCode===32) console.log('black')
   }
   document.addEventListener('keydown',handleKeyDown)
-  const initialChecked=()=>{
-    for (let ig in relative) {
-      for (let i = 1; i < ig.length; i++) {
-        console.log('1')
-        checked.push(ig[i])
-      }
-    }
-    setChecked(checked)
-  }
-  useEffect(()=>{
-    if(relative){
-      for (let ig=0; ig < relative.length;ig++) {
-        let group = relative[ig]
-        for (let i = 1; i < group.length; i++) {
-          checked.push(group[i].original)
-        }
-      }
-      setChecked(checked)
-    }
-  },[relative])
 
-  const handleCheck = (key,index)=>{
-    let webpath = relative[key][index].original
-    let idx = checked.indexOf(webpath)
-
-    let before_class = document.getElementById(get_rela_id('img',key,index)).className
-    document.getElementById(get_rela_id('img',key,index)).className = before_class=='rela_img'?'rela_img_checked':'rela_img'
-    if(idx>-1){
-      checked.splice(idx,1)
-    }else {
-      checked.push(webpath)
-    }
-    setChecked(checked)
-  }
-  const get_rela_id=(prefix,key,index)=>{
-    let base = 0
-    for (let i = 0; i < key; i++) {
-      base += relative[i].length
-    }
-    base += index
-    return prefix+base.toString()
-  }
-  const handleGroupCheck=(key,event)=>{
+  const handleGroupCheck=(key)=>{
     let len = relative[key].length;
     let reverse = true
-    for (let i = 0; i < len; i++) {
-      var the_checkbox = document.getElementById(get_rela_id('checkbox',key,i))
-      if(!the_checkbox.checked){
-        the_checkbox.click()
-        reverse = false
-      }
+    for (let i = 0; i < len; i++) {//全选
+      var boxs = document.getElementsByName(relative[key][i].index);
+        for (let j = 0; j < boxs.length; j++) {
+            if(!boxs[j].checked){
+                boxs[j].click()
+                reverse = false
+            }
+        }
     }
-    if(reverse){
+    if(reverse){//反选
       for (let i = 0; i < len; i++) {
-        document.getElementById(get_rela_id('checkbox',key,i)).click()
+          var boxs = document.getElementsByName(relative[key][i].index);
+          for (let j = 0; j < boxs.length; j++) {
+              boxs[j].click()
+          }
       }
     }
-    event.stopPropagation()
   }
   const switchMode = (mode) => {
     var content;
@@ -115,23 +80,22 @@ function Everything() {
       case 0://一般图片列表模式
         content = <div className={"grid grid-cols-1 md:grid-cols-"+num_per_row+" gap-"+num_gap}>
           {images.map(image => (
-            <ImageCard key={image.id} image={image} setSelectedImg={setSelectedImg} setTerm={setTerm}/>
+            <ImageCard key={image.id} image={image} setSelectedImg={setSelectedImg} setTerm={setTerm} edit={edit}/>
           ))}
         </div>;
       break;
       case 1://相似图片模式
         content = <div>
-          <Button onClick={()=>console.log(checked)}>删除</Button>
           <Collapse defaultActiveKey={getlist(relative.length)} onChange={()=>console.log('collapse')}>
             {relative.map((img_group,key) => (
               <Panel header={<div>{"和"+img_group[0].id+"相似的"+img_group.length+"张相似图片"}
-                <Checkbox className={'group_check'} onChange={e=>handleGroupCheck(key,e)}>全选</Checkbox></div>} key={key}>
+                <Checkbox className={'group_check'} onChange={e=>handleGroupCheck(key)}>全选</Checkbox></div>} key={key}>
                 <Space size={'middle'}>
-                  {img_group.map(image=>(
+                  {img_group.map((image,innerkey)=>(
                     <div className={'img-group'}>
-                      <Checkbox id={get_rela_id('checkbox',key,image.index)} className={'img-tip'} defaultChecked={image.checked} onChange={()=>{handleCheck(key,image.index)}}></Checkbox>
-                      <p className={'img-tip-p'}>{image.index!==0?"相似度"+Math.floor(image.score*10000)/100+'%':''}</p>
-                      <img id={get_rela_id('img',key,image.index)} className={image.checked?'rela_img_checked':'rela_img'} width={200} src={image.original}/>
+                      <p className={'img-tip-p'}>{innerkey!==0?"相似度"+Math.floor(image.score*10000)/100+'%':''}</p>
+                        <ImageCard key={image.id} image={image} setSelectedImg={setSelectedImg} setTerm={setTerm}
+                                   mode={contentMode} defaultchecked={image.checked} edit={true}/>
                     </div>
                   ))}
                 </Space>
@@ -142,38 +106,76 @@ function Everything() {
     }
     return content;
   }
-  const getlist=(i)=>{
+  const getlist=(i)=>{//用来初始展开collapse
     let list = []
     for (let j = 0; j < i; j++) {
       list.push(j)
     }
     return list
   }
+  const Delete=()=> {
+      let boxs = document.getElementsByClassName('ant-checkbox-input')
+      let paths = []
+      for (let i = boxs.length-1; i >=0 ; i--) {
+          if (boxs[i].checked){
+              let idx = boxs[i].name
+              paths.push(images[idx].id)
+              console.log(boxs[i].name);
+              images.splice(idx,1)
+          }
+      }
+      fetch('http://localhost:5000/delete', {
+          method: 'POST', // or 'PUT'
+          body: JSON.stringify({paths:paths}), // data can be `string` or {object}!
+          headers: new Headers({
+              'Content-Type': 'application/json'
+          })
+      })
+          .then(res=>{
+              if(res.status===200) message.success("删除"+paths.length+"张照片")
+              setImages(images)
+              setEdit(false);
+              // setImages(images)
+              setRefresh(refresh+1)
+          }).catch(err=>console.log(err))
+  }
 
   return (
     <div>
       <Navbar setTerm={setTerm}/>
         <div className={'left'}>
+            {/*侧边栏*/}
           <SideBar setContentMode={setContentMode}
                    setRelative={setRelative}
                    setShowTagTitle={setShowTagTitle}
                    setNum_per_row={setNum_per_row}
+                   setTitle={setTitle}
                    setImages={setImages}/>
         </div>
-      <div className="container mx-auto" id={"right"}>
-          <span id={'slider'}><Slider defaultValue={5} dots={true} min={4} max={12} onChange={setNum_per_row}/></span>
-          <Slider defaultValue={0} min={0} max={10} onChange={setNum_gap}/>
-          {/*<Select defaultValue="lucy" style={{ width: 120 }} onChange={setNum_per_row}>*/}
-          {/*    <Option value="jack">Jack</Option>*/}
-          {/*    <Option value="lucy">Lucy</Option>*/}
-          {/*    <Option value="disabled" disabled>*/}
-          {/*        Disabled*/}
-          {/*    </Option>*/}
-          {/*    <Option value="Yiminghe">yiminghe</Option>*/}
-          {/*</Select>*/}
-          {/*{true?{term'的相关结果'}}*/}
-          {term!=='' && ShowtagTitle ? term+`的相关结果`  : ''}
-          {term!=='' && ShowtagTitle ? <Button type={'link'} onClick={()=>setTerm('')}>x</Button>:''}
+      <div className="container mx-auto mt-16" id={"right"}>
+          <PageHeader //头部
+              ghost={false}
+              onBack={() => window.history.back()}
+              title={title}
+              subTitle={term!=='' && ShowtagTitle ? term+`的相关结果`  : ''}
+              extra={[
+                  edit||contentMode===1?<Button size={'small'} key={'1'} danger={true} onClick={Delete}>删除</Button>:
+                      <Button type={'primary'} size={'small'} key={'1'} onClick={()=>setEdit(true)}>编辑</Button>,
+                  <Select size={'small'} defaultValue='5列' style={{ width: 60 }} onChange={setNum_per_row}>
+                      {[4,5,6,7,8,9,10,11,12].map((value,key)=>
+                          <Option value={value}>{value+'列'}</Option>
+                      )}
+                  </Select>,
+                  <Select size={'small'} defaultValue='间距0' style={{ width: 80 }} onChange={setNum_gap}>
+                      {[0,1,2,3,4,5,6,7,8,9,10].map((value)=>
+                          <Option value={value}>{'间距'+value}</Option>
+                      )}
+                  </Select>,
+              ]}
+          />
+
+          {/*{term!=='' && ShowtagTitle ? <Button type={'link'} onClick={()=>setTerm('')}>x</Button>:''}*/}
+
         {!isLoading && images.length === 0 && <h1 className="text-5xl text-center mx-auto mt-32">No images found.</h1>}
 
         {isLoading ? <h1 className="text-6xl text-center mx-auto mt-32">Loading...</h1> :
