@@ -1,0 +1,16 @@
+{
+    "title": "MyApp",
+    "icon": "app.icns",
+    "background": "bg.png",
+    "contents": [
+    { "x": 380, "y": 170, "type": "link", "path": "/Applications" },
+    { "x": 200, "y": 170, "type": "file", "path": "out/my-new-app-darwin-arm64/my-new-app.app" } //
+],
+    "window": {
+    "size": {
+        "width": 580,
+            "height": 360
+    }
+},
+    "format": "UDBZ"
+}

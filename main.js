@@ -18,7 +18,7 @@ function createWindow () {
 
   // and load the index.html of the app.
   if (pkg.DEV) {
-    win.loadURL("http://localhost:3001/")
+    win.loadURL("http://localhost:3000/")
   } else {
     win.loadFile('./build/index.html')
   }

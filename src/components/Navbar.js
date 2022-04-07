@@ -96,7 +96,7 @@ const Navbar = (setTerm) => {
                         {/* <h1 className="font-bold text-3xl ml-2">PIXY</h1> */}
 
                     </div>
-                  <ImageSearch  setTerm={setTerm}/>
+                  <ImageSearch setTerm={setTerm}/>
 
 
 
@@ -123,7 +123,7 @@ const Navbar = (setTerm) => {
 
 
                     <ul className="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
-                        <li><a href="#" className="block md:inline-block text-white hover:text-blue-500 px-3 py-3 border-b-2 border-blue-900 md:border-none">设置</a></li>
+                        <li><a href="#" className="block md:inline-block text-white hover:text-blue-500 px-3 py-3 border-b-2 border-blue-900 md:border-none ">设置</a></li>
                         <li><Upload {...props} directory={true}><a onClick={importDir} href="#" className="block md:inline-block text-white hover:text-blue-500 px-3 py-3 border-b-2 border-blue-900 md:border-none">导入</a></Upload></li>
                         <li><a href="#" className="block md:inline-block text-white hover:text-blue-500 px-3 py-3 border-b-2 border-blue-900 md:border-none">一键清理</a></li>
                     </ul>

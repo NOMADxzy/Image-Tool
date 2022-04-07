@@ -9,7 +9,7 @@ import Aside from './components/Aside';
 import { } from '@fortawesome/react-fontawesome'
 import ImageGallery from "./ImageGallery";
 import "antd/dist/antd.css";
-import {Button, Slider, Select, Collapse, Image, Space, Card, Checkbox, PageHeader, message} from 'antd'
+import {Button, Slider, Select, Collapse, Image, Space, Card, Checkbox, PageHeader, message,Popconfirm} from 'antd'
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
 const { Panel } = Collapse;
 const Option = Select
@@ -154,13 +154,17 @@ function Everything() {
         </div>
       <div className="container mx-auto mt-16" id={"right"}>
           <PageHeader //头部
-              ghost={false}
-              onBack={() => window.history.back()}
+              // ghost={false}
+              onBack={() => setTerm('')}
               title={title}
               subTitle={term!=='' && ShowtagTitle ? term+`的相关结果`  : ''}
               extra={[
-                  edit||contentMode===1?<Button size={'small'} key={'1'} danger={true} onClick={Delete}>删除</Button>:
-                      <Button type={'primary'} size={'small'} key={'1'} onClick={()=>setEdit(true)}>编辑</Button>,
+                  <Button size={"small"} key={2}>{contentMode===1?relative.length+'组照片':images.length+'张照片'}</Button>,
+                  edit||contentMode===1?
+                      <Popconfirm placement="topRight" title={'确定删除?'} onConfirm={Delete} okText="Yes" cancelText="No">
+                          <Button size={'small'} key={'1'} danger={true} >删除</Button>
+                      </Popconfirm>
+                      :<Button type={'primary'} size={'small'} key={'1'} onClick={()=>setEdit(true)}>编辑</Button>,
                   <Select size={'small'} defaultValue='5列' style={{ width: 60 }} onChange={setNum_per_row}>
                       {[4,5,6,7,8,9,10,11,12].map((value,key)=>
                           <Option value={value}>{value+'列'}</Option>
