@@ -9,11 +9,19 @@ import Aside from './components/Aside';
 import { } from '@fortawesome/react-fontawesome'
 import ImageGallery from "./ImageGallery";
 import "antd/dist/antd.css";
-import {Button, Slider, Select, Collapse, Image, Space, Card, Checkbox, PageHeader, message,Popconfirm} from 'antd'
+import {Menu,Affix,Button, Slider, Select, Collapse, Image, Space, Card, Checkbox, PageHeader, message,Popconfirm} from 'antd'
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
+import SimpleModal from "./components/SimpleModal";
 const { Panel } = Collapse;
 const Option = Select
 const { Meta } = Card;
+const menu = (
+    <Menu>
+        <Menu.Item key="1">1st menu item</Menu.Item>
+        <Menu.Item key="2">2nd menu item</Menu.Item>
+        <Menu.Item key="3">3rd menu item</Menu.Item>
+    </Menu>
+);
 
 const FETCH_API = 'http://localhost:5000/get_pics/pics';
 // const FETCH_API = `https://pixabay.com/api/?key=${process.env.REACT_APP_PIXABAY_API_KEY}&image_type=photo&pretty=true`
@@ -31,6 +39,7 @@ function Everything() {
   const [num_per_row,setNum_per_row]=useState(5)
     const [num_gap,setNum_gap]=useState(0)
   const [selectedImg, setSelectedImg] = useState(null);
+  const [simpleImg,setSimpleImg] = useState(null);
   const [ShowtagTitle,setShowTagTitle] = useState(false)
     const [refresh,setRefresh] = useState(0);
 
@@ -80,7 +89,8 @@ function Everything() {
       case 0://一般图片列表模式
         content = <div className={"grid grid-cols-1 md:grid-cols-"+num_per_row+" gap-"+num_gap}>
           {images.map(image => (
-            <ImageCard key={image.id} image={image} setSelectedImg={setSelectedImg} setTerm={setTerm} edit={edit}/>
+            <ImageCard key={image.id} image={image} setSelectedImg={setSelectedImg} setTerm={setTerm}
+                       edit={edit} setSimpleImg={setSimpleImg} update={()=>setRefresh(refresh+1)}/>
           ))}
         </div>;
       break;
@@ -153,30 +163,32 @@ function Everything() {
                    setImages={setImages}/>
         </div>
       <div className="container mx-auto mt-16" id={"right"}>
-          <PageHeader //头部
-              // ghost={false}
-              onBack={() => setTerm('')}
-              title={title}
-              subTitle={term!=='' && ShowtagTitle ? term+`的相关结果`  : ''}
-              extra={[
-                  <Button size={"small"} key={2}>{contentMode===1?relative.length+'组照片':images.length+'张照片'}</Button>,
-                  edit||contentMode===1?
-                      <Popconfirm placement="topRight" title={'确定删除?'} onConfirm={Delete} okText="Yes" cancelText="No">
-                          <Button size={'small'} key={'1'} danger={true} >删除</Button>
-                      </Popconfirm>
-                      :<Button type={'primary'} size={'small'} key={'1'} onClick={()=>setEdit(true)}>编辑</Button>,
-                  <Select size={'small'} defaultValue='5列' style={{ width: 60 }} onChange={setNum_per_row}>
-                      {[4,5,6,7,8,9,10,11,12].map((value,key)=>
-                          <Option value={value}>{value+'列'}</Option>
-                      )}
-                  </Select>,
-                  <Select size={'small'} defaultValue='间距0' style={{ width: 80 }} onChange={setNum_gap}>
-                      {[0,1,2,3,4,5,6,7,8,9,10].map((value)=>
-                          <Option value={value}>{'间距'+value}</Option>
-                      )}
-                  </Select>,
-              ]}
-          />
+          <Affix offsetTop={64}>
+              <PageHeader //头部
+                  // ghost={false}
+                  onBack={() => setTerm('')}
+                  title={title}
+                  subTitle={term!=='' && ShowtagTitle ? term+`的相关结果`  : ''}
+                  extra={[
+                      <Button size={"small"} key={2}>{contentMode===1?relative.length+'组照片':images.length+'张照片'}</Button>,
+                      edit||contentMode===1?
+                          <Popconfirm placement="topRight" title={'确定删除?'} onConfirm={Delete} okText="Yes" cancelText="No">
+                              <Button size={'small'} key={'1'} danger={true} >删除</Button>
+                          </Popconfirm>
+                          :<Button type={'primary'} size={'small'} key={'1'} onClick={()=>setEdit(true)}>编辑</Button>,
+                      <Select size={'small'} defaultValue='5列' style={{ width: 60 }} onChange={setNum_per_row}>
+                          {[4,5,6,7,8,9,10,11,12].map((value,key)=>
+                              <Option value={value}>{value+'列'}</Option>
+                          )}
+                      </Select>,
+                      <Select size={'small'} defaultValue='间距0' style={{ width: 80 }} onChange={setNum_gap}>
+                          {[0,1,2,3,4,5,6,7,8,9,10].map((value)=>
+                              <Option value={value}>{'间距'+value}</Option>
+                          )}
+                      </Select>,
+                  ]}
+              />
+          </Affix>
 
           {/*{term!=='' && ShowtagTitle ? <Button type={'link'} onClick={()=>setTerm('')}>x</Button>:''}*/}
 
@@ -187,7 +199,7 @@ function Everything() {
 
         }
         {(selectedImg>0||selectedImg===0) && <Modal selectedImg={selectedImg} setSelectedImg={setSelectedImg} images={images} setImages={setImages}/>}
-
+          {(simpleImg) && <SimpleModal simpleImg={simpleImg} setSimpleImg={setSimpleImg}/>}
       </div>
 
       <Footer />
